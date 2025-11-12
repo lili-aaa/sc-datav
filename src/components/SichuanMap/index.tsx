@@ -121,9 +121,10 @@ function SichuanMap3D() {
             [];
           return (
             <Billboard
+              key={"city_" + index}
               rotation={[Math.PI, 0, 0]}
               position={[x ?? 0, y ?? 0, -0.1]}>
-              <Text key={"city_" + index} color="#ffffff" fontSize={0.2}>
+              <Text color="#ffffff" fontSize={0.2}>
                 {item.properties.name}
               </Text>
             </Billboard>
