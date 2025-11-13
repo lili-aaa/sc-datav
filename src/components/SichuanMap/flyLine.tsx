@@ -84,6 +84,8 @@ export default function FlyLine({ projection }: { projection: GeoProjection }) {
 
   return (
     <object3D position={[0, 0, -0.51]}>
+      {/* <EffectComposer>
+        <Bloom /> */}
       <points geometry={geometry.current}>
         {/* <bufferGeometry setFromPoints={newPoints2}>
           <bufferAttribute
@@ -93,45 +95,36 @@ export default function FlyLine({ projection }: { projection: GeoProjection }) {
         </bufferGeometry> */}
         <pointsMaterial
           transparent
+          // depthTest={false}
           color={controls.lineColor}
-          size={0.2} //点大小 考虑相机渲染范围设置
-          //   vertexColors= {THREE.VertexColors} //使用顶点颜色渲染
+          size={0.2}
+          blending={THREE.AdditiveBlending}
           onBeforeCompile={(shader) => {
             // 顶点着色器中声明一个attribute变量:百分比
             shader.vertexShader = shader.vertexShader
               .replace(
                 "void main() {",
-                [
-                  "attribute float percent;", //顶点大小百分比变量，控制点渲染大小
-                  "void main() {",
-                ].join("\n") // .join()把数组元素合成字符串
+                "attribute float percent;\nvoid main() {"
               )
               // 调整点渲染大小计算方式
               .replace(
                 "gl_PointSize = size;",
-                ["gl_PointSize = percent *size;"].join("\n") // .join()把数组元素合成字符串
+                "gl_PointSize = percent * size;"
               );
 
             shader.fragmentShader = shader.fragmentShader.replace(
               "#include <output_fragment>",
-              `#ifdef OPAQUE
-                diffuseColor.a = 1.0;
-                #endif
-
-                // https://github.com/mrdoob/three.js/pull/22425
-                #ifdef USE_TRANSMISSION
-                diffuseColor.a *= transmissionAlpha + 0.2;
-                #endif
-
-                // 设置透明度变化
-                float r = distance(gl_PointCoord, vec2(0.5, 0.5));
-                // diffuseColor.a = diffuseColor.a*(1.0 - r/0.5);//透明度线性变化
-                diffuseColor.a = diffuseColor.a*pow( 1.0 - r/0.5, 6.0 );//透明度非线性变化  参数2越大，gl_PointSize要更大，可以直接设置着色器代码，可以设置材质size属性
-                gl_FragColor = vec4( outgoingLight, diffuseColor.a );`
+              ` 
+                #include <output_fragment>
+                float r = distance(gl_PointCoord, vec2(0.5));
+                float alpha = pow(1.0 - r / 0.5, 6.0);
+                gl_FragColor = vec4(gl_FragColor.rgb, gl_FragColor.a * alpha);
+                `
             );
           }}
         />
       </points>
+      {/* </EffectComposer> */}
     </object3D>
   );
 }

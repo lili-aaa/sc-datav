@@ -6,8 +6,9 @@ import useMoveTo from "../../hooks/useMoveTo";
 import bg from "../../assets/card_bg.jpg";
 
 const Wrapper = styled.div`
-  position: fixed;
-  inset: 0;
+  position: relative;
+  width: 100%;
+  height: 100%;
   pointer-events: none;
   z-index: 100;
   display: flex;
@@ -82,31 +83,32 @@ export default function Content() {
   const { restart: topRestart, reverse: topReverse } = useMoveTo(
     topBoxRef,
     "toBottom",
-    0.6
+    0.6,
+    1
   );
   const { restart: leftRestart, reverse: leftReverse } = useMoveTo(
     leftBoxRef,
     "toRight",
     0.8,
-    0.5
+    1.5
   );
   const { restart: rightRestart, reverse: rightReverse } = useMoveTo(
     rightBoxRef,
     "toLeft",
     0.8,
-    0.5
+    1.5
   );
   const { restart: leftRestart1, reverse: leftReverse1 } = useMoveTo(
     leftBoxRef1,
     "toRight",
     0.8,
-    0.5
+    1.5
   );
   const { restart: rightRestart1, reverse: rightReverse1 } = useMoveTo(
     rightBoxRef1,
     "toLeft",
     0.8,
-    0.5
+    1.5
   );
 
   useControls({

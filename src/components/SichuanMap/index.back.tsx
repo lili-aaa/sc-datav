@@ -5,6 +5,9 @@ import { useControls } from "leva";
 import * as THREE from "three";
 import * as d3 from "d3-geo";
 import sichuanData from "../../assets/sc.json";
+import type { CityGeoJSON } from "../map";
+
+const data = sichuanData as CityGeoJSON;
 
 function SichuanMap3D() {
   // 创建投影和路径生成器
@@ -28,7 +31,7 @@ function SichuanMap3D() {
       maxY = -Infinity;
 
     // 计算整个地图的边界
-    const pathBounds = path.bounds(sichuanData);
+    const pathBounds = path.bounds(data);
     minX = pathBounds[0][0];
     minY = pathBounds[0][1];
     maxX = pathBounds[1][0];

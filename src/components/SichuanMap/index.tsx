@@ -1,19 +1,20 @@
-import { useEffect, useMemo, useRef } from "react";
-import { Canvas } from "@react-three/fiber";
+import { useEffect, useLayoutEffect, useMemo } from "react";
+import { Canvas, useThree } from "@react-three/fiber";
 import {
   Billboard,
   Extrude,
   Grid,
   Line,
   OrbitControls,
+  Sparkles,
   useTexture,
 } from "@react-three/drei";
+import gsap from "gsap";
 import styled from "styled-components";
 import { Text } from "@react-three/drei";
-import { folder, useControls } from "leva";
+import { folder, Leva, useControls } from "leva";
 import * as THREE from "three";
 import * as d3 from "d3-geo";
-import gsap from "gsap";
 import OutLine from "./outline";
 import FlyLine from "./flyLine";
 import type { CityGeoJSON } from "../map";
@@ -21,6 +22,7 @@ import Content from "./content";
 
 import sichuanData from "../../assets/sc.json";
 import texturesImg from "../../assets/map.jpeg";
+import autofit from "autofit.js";
 
 const data = sichuanData as CityGeoJSON;
 
@@ -43,26 +45,32 @@ function SichuanMap3D() {
       .translate([0, 0]);
   }, []);
 
-  const mapRef = useRef<THREE.Group<THREE.Object3DEventMap>>(null);
+  const { camera } = useThree();
 
   useEffect(() => {
-    if (mapRef.current) {
-      gsap.to(mapRef.current.scale, {
-        duration: 3,
-        x: 1,
-        y: 1,
-        z: 1,
+    const tween = gsap.fromTo(
+      camera.position,
+      {
+        x: 15,
+        y: 5,
+        z: 5,
+      },
+      {
+        duration: 1.5,
+        x: 10,
+        y: 8,
+        z: 0,
         ease: "sine.inOut",
-      });
-    }
-  }, []);
+      }
+    );
+
+    return () => {
+      tween.kill();
+    };
+  }, [camera]);
 
   return (
-    <group
-      ref={mapRef}
-      scale={0.5}
-      position={[0, 0.25, -1.5]}
-      rotation={[Math.PI / 2, 0, Math.PI * 1.5]}>
+    <group position={[0, 0.5, -1.5]} rotation={[Math.PI / 2, 0, Math.PI * 1.5]}>
       <group renderOrder={0} position={[0, 0, -0.01]}>
         {data.features.map((feature) => {
           // 获取城市名称
@@ -114,16 +122,14 @@ function SichuanMap3D() {
           );
         })}
       </group>
-      <group position={[0, 0, -0.02]}>
+
+      <group position={[0, 0, -0.1]}>
         {data.features.map((item, index) => {
           const [x, y] =
             projection(item.properties.centroid ?? item.properties.center) ??
             [];
           return (
-            <Billboard
-              key={"city_" + index}
-              rotation={[Math.PI, 0, 0]}
-              position={[x ?? 0, y ?? 0, -0.1]}>
+            <Billboard key={"city_" + index} position={[x ?? 0, y ?? 0, 0]}>
               <Text color="#ffffff" fontSize={0.2}>
                 {item.properties.name}
               </Text>
@@ -131,6 +137,7 @@ function SichuanMap3D() {
           );
         })}
       </group>
+
       <OutLine projection={projection} />
       <FlyLine projection={projection} />
     </group>
@@ -174,47 +181,82 @@ const Wrapper = styled.div`
   height: 100vh;
 `;
 
+const CanvasWrapper = styled.div`
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+
+  canvas {
+    width: 100% !important;
+    height: 100% !important;
+  }
+`;
+
+const scale = new Float32Array(
+  Array.from({ length: 50 }, () => 0.5 + Math.random() * 30)
+);
+
 export default function SichuanMap() {
   const controls = useControls({
     网格: folder({
-      infiniteGrid: true,
-      cellColor: "#6f6f6f",
-      sectionColor: "#b2b6ff",
+      infiniteGrid: { label: "显示网格", value: true },
+      cellColor: { label: "单元格颜色", value: "#6f6f6f" },
+      sectionColor: { label: "分区颜色", value: "#7fe5a8" },
     }),
+    GBackground: { label: "背景颜色", value: "#26282a" },
   });
 
+  useLayoutEffect(() => {
+    autofit.init({ el: "#datav" });
+
+    return () => {
+      autofit.off();
+    };
+  }, []);
+
   return (
-    <Wrapper>
-      <Canvas
-        camera={{ position: [10, 8, 0], fov: 60 }}
-        scene={{ background: new THREE.Color("#26282a") }}>
-        <Grid
-          //   sectionSize={0}
-          //   position={[0, -0.25, 0]}
-          //   cellColor={controls.cellColor}
-          //   infiniteGrid={controls.infiniteGrid}
-          renderOrder={-1}
-          position={[0, -0.25, 0]}
-          infiniteGrid={controls.infiniteGrid}
-          cellSize={0.6}
-          cellThickness={0.6}
-          sectionSize={3.3}
-          sectionThickness={1.5}
-          sectionColor={controls.sectionColor}
-          cellColor={controls.cellColor}
-          fadeDistance={30}
-        />
-        <AmbientLight />
-        <PointLight />
-        <SichuanMap3D />
-        <OrbitControls
-          enablePan={true}
-          enableZoom={true}
-          enableRotate={true}
-          target={[0, 0, 0]} // 设置控制器的目标点为中心
-        />
-      </Canvas>
-      <Content />
-    </Wrapper>
+    <>
+      <Leva collapsed />
+      <Wrapper id="datav">
+        <CanvasWrapper>
+          <Canvas camera={{ fov: 60 }}>
+            <color attach="background" args={[controls.GBackground]} />
+            <Grid
+              //   sectionSize={0}
+              //   position={[0, -0.25, 0]}
+              //   cellColor={controls.cellColor}
+              //   infiniteGrid={controls.infiniteGrid}
+              renderOrder={-1}
+              infiniteGrid={controls.infiniteGrid}
+              cellSize={0.6}
+              cellThickness={0.6}
+              sectionSize={3.3}
+              sectionThickness={1.5}
+              sectionColor={controls.sectionColor}
+              cellColor={controls.cellColor}
+              fadeDistance={30}
+            />
+            <AmbientLight />
+            <PointLight />
+            <Sparkles
+              count={scale.length}
+              size={scale}
+              position={[0, 2, 0]}
+              scale={[20, 5, 20]}
+              speed={0.5}
+            />
+            <SichuanMap3D />
+            <OrbitControls
+              enablePan={true}
+              enableZoom={true}
+              enableRotate={true}
+              target={[0, 0, 0]} // 设置控制器的目标点为中心
+            />
+          </Canvas>
+        </CanvasWrapper>
+        <Content />
+      </Wrapper>
+    </>
   );
 }

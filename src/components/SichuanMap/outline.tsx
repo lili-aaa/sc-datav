@@ -1,43 +1,43 @@
 import { useRef } from "react";
-import { extend, useFrame } from "@react-three/fiber";
-import { Extrude, shaderMaterial } from "@react-three/drei";
+import { useFrame } from "@react-three/fiber";
+import { Extrude } from "@react-three/drei";
 import * as THREE from "three";
 import { useControls } from "leva";
 import { type GeoProjection } from "d3-geo";
 
 import scOutlineData from "../../assets/sc_outline.json";
 
-const OutLineShiftMaterial = extend(
-  shaderMaterial(
-    { time: 0, color: new THREE.Color("#00FFFF") },
-    // vertex shader
-    /*glsl*/ `
-    varying vec2 vUv;
-    varying vec3 vNormal;
-    
-    void main() {
-        vUv=uv;
-        vNormal=normal;           
-        
-        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-    }
-  `,
-    // fragment shader
-    /*glsl*/ `
-    uniform float time;  
-    uniform vec3 color;                
-    varying vec2 vUv; 
-    varying vec3 vNormal;
-    void main() {
-        if(vNormal.z==1.0||vNormal.z==-1.0||vUv.y ==0.0){
-            discard;
-        } else{
-            gl_FragColor =vec4(color,0.6-fract((vUv.y-time)));
-        } 
-    }
-  `
-  )
-);
+// const OutLineShiftMaterial = extend(
+//   shaderMaterial(
+//     { time: 0, color: new THREE.Color("#00FFFF") },
+//     // vertex shader
+//     /*glsl*/ `
+//     varying vec2 vUv;
+//     varying vec3 vNormal;
+
+//     void main() {
+//         vUv=uv;
+//         vNormal=normal;
+
+//         gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+//     }
+//   `,
+//     // fragment shader
+//     /*glsl*/ `
+//     uniform float time;
+//     uniform vec3 color;
+//     varying vec2 vUv;
+//     varying vec3 vNormal;
+//     void main() {
+//         if(vNormal.z==1.0||vNormal.z==-1.0||vUv.y ==0.0){
+//             discard;
+//         } else{
+//             gl_FragColor =vec4(color,0.6-fract((vUv.y-time)));
+//         }
+//     }
+//   `
+//   )
+// );
 
 export function OutLineAnimated() {
   const controls = useControls({
