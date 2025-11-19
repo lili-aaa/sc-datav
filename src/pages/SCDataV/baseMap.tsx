@@ -3,7 +3,7 @@ import { Billboard, Line, Text, useTexture } from "@react-three/drei";
 import * as THREE from "three";
 import Shape from "./shape";
 import type { GeoProjection } from "d3-geo";
-import type { CityGeoJSON } from "@/components/map";
+import type { CityGeoJSON } from "@/pages/SCDataV/map";
 
 import scMapData from "@/assets/sc.json";
 import textureMap from "@/assets/sc_map.png";

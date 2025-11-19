@@ -2,7 +2,7 @@ import { useEffect, useMemo } from "react";
 import { useThree } from "@react-three/fiber";
 import * as d3 from "d3-geo";
 import { gsap } from "gsap";
-import type { CityGeoJSON } from "@/components/map";
+import type { CityGeoJSON } from "@/pages/SCDataV/map";
 
 import scMapData from "@/assets/sc.json";
 import BaseMap from "./baseMap";
